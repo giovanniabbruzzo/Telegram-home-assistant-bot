@@ -4,12 +4,12 @@ import time
 
 # Choose an open pin connected to the Data In of the NeoPixel strip, i.e. board.D18
 # NeoPixels must be connected to D10, D12, D18 or D21 to work.
-PIXEL_PIN = board.D18
+PIXEL_PIN = board.D12
 
 # The number of NeoPixels
 NUM_PIXELS = 20
 
-BRIGHTNESS = 0.1
+BRIGHTNESS = 0.5
 # Color palette
 LIST_OF_COLORS = {
         "amber":(255,126,0), "white":(255, 255, 255), "almond":(239,222,205), "blue":(0, 0, 255), 

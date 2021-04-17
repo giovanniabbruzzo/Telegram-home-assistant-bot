@@ -1,2 +1,3 @@
 # Home pi control bot is a Python Bot for Telegram used to provide useful info about your own home
 After downloading the code create a file "private.py" where you need to add the "TOKEN" variable with the token id given by the father bot and a list "ALLOWED_IDS" with all the IDs of the phones who want to have access to the bot.
+To start the Bot at start-up I added the command "sudo python3 ~/Telegram-home-assistant-bot/home_pi_control_bot.py  1&>> ~/Telegram-home-assistant-bot/error.log" in "/etc/rc.local"

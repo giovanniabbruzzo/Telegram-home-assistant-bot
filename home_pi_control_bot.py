@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-from telegram.ext import Updater, CommandHandler
-from  telegram import Bot
+from telegram.ext import Updater, CommandHandler, CallbackContext
+from  telegram import Bot, ParseMode
 import logging
 import time
 import dht22_drivers as dht
@@ -8,7 +8,7 @@ import leds
 import global_settings as gs
 import schedule
 from threading import Thread
-from private import TOKEN, ALLOWED_IDS
+from private import TOKEN, ALLOWED_IDS, ADMIN_ID
 
 """
 This script needs to be run with "sudo python3"
@@ -20,8 +20,6 @@ List of commands this far:
     leds_color - Turn on the LEDs with a specific color, send color after the command. For complete list of colors see command "/what_colors"
     what_colors - Receive the list of all the color available for the LEDs
 """
-
-myID = ALLOWED_IDS[0]
 
 def start(update, context):
     """
@@ -108,16 +106,23 @@ def what_colors(update, context):
         msg = f"List of colors: {colors}"
         context.bot.send_message(chat_id, text=msg)  
 
-    
 def morning_routine():
     """
         If it's time to wake up turn on LEDs and send the morning routing to the bot
     """
-#    leds.leds_on()
     # Send the good morning
     msg = f"Morning, the current temperature is {dht.getTemp()}C and humidity {dht.getHum()}% !"
-    # Send just to me
-    send_message(msg, myID)
+    # Send just to Admin
+    send_message(msg, ADMIN_ID)
+
+def boot_up_msg():
+    """
+        It indicates that the bot just booted up
+    """
+    # Send the good morning
+    msg = "I just booted up! :)"
+    # Send just to Admin
+    send_message(msg, ADMIN_ID)
     
 def schedule_checker():
     while True:
@@ -148,8 +153,7 @@ def main():
     """    
     updater = Updater(token=TOKEN, use_context=True)
     dispatcher = updater.dispatcher # Inrtoduce the dispacher locally
-    logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                     level=logging.INFO) # Set up the logging 
+
     # Define the different handlsers
     start_handler = CommandHandler('start', start)
     temperature_handler = CommandHandler('temperature', temperature)
@@ -161,41 +165,29 @@ def main():
     handlers = [start_handler, temperature_handler, humidity_handler,led_off_handler,led_on_handler,leds_color_handler,what_colors_handler]
     for i in handlers:
         dispatcher.add_handler(i)
+
+    boot_up_msg()
         
-        # Create the job in schedule.
+    # Create the job in schedule.
     schedule.every().day.at("08:45").do(morning_routine)
-    schedule.every().day.at("18:30").do(ledOn)
+    schedule.every().day.at("20:30").do(ledOn)
     schedule.every().day.at("00:30").do(ledOff)
+    schedule.every(gs.MINUTES_BETWEEN_READS).minutes.do(routine_sensor_reading)
 
     # Spin up a thread to run the schedule check so it doesn't block your bot.
     # This will take the function schedule_checker which will check every second
     # to see if the scheduled job needs to be ran.
     Thread(target=schedule_checker).start() 
-    
+
     # Run until Cntrl+c is typed 
     updater.start_polling()
-    
-    print("Bot up and running...Press Cntrl+C to power down!")
-#    try:
-    while True:
-#            current_date = time.localtime(time.time())
-#            if (current_date.tm_hour - gs.ALARM_TIME["h"]) == 0:
-#                while (current_date.tm_min - gs.ALARM_TIME["m"]) != 0:
-#                    time.sleep(59) # Sleep for 59 seconds
-#                morning_routine()
-#            else:
-#                routine_sensor_reading()
-#                # Sleep
-#                time.sleep(60*gs.MINUTES_BETWEEN_READS)
-            routine_sensor_reading()
-            # Sleep
-            time.sleep(60*gs.MINUTES_BETWEEN_READS)
 
-#    except KeyboardInterrupt:
-#        updater.stop()
-#        print("The bot has been stopped...")
-#    except Exception as e:
-#        print(f"Execption: {e} catched")
+    print("Bot up and running...Press Cntrl+C to power down!")
+
+    # Run the bot until you press Ctrl-C or the process receives SIGINT,
+    # SIGTERM or SIGABRT. This should be used most of the time, since
+    # start_polling() is non-blocking and will stop the bot gracefully.
+    updater.idle()
         
 if __name__=="__main__":
     main()
