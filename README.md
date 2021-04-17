@@ -1,0 +1,2 @@
+# Home pi control bot is a Python Bot for Telegram used to provide useful info about your own home
+After downloading the code create a file "private.py" where you need to add the "TOKEN" variable with the token id given by the father bot and a list "ALLOWED_IDS" with all the IDs of the phones who want to have access to the bot.

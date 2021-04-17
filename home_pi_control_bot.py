@@ -21,6 +21,8 @@ List of commands this far:
     what_colors - Receive the list of all the color available for the LEDs
 """
 
+myID = ALLOWED_IDS[0]
+
 def start(update, context):
     """
         Send the welcome message
@@ -114,8 +116,8 @@ def morning_routine():
 #    leds.leds_on()
     # Send the good morning
     msg = f"Morning, the current temperature is {dht.getTemp()}C and humidity {dht.getHum()}% !"
-    # Send just to Gio
-    send_message(msg, ALLOWED_IDS[0])
+    # Send just to me
+    send_message(msg, myID)
     
 def schedule_checker():
     while True:
